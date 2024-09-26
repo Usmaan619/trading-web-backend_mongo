@@ -11,6 +11,12 @@ const userSchema = new Schema(
       type: String,
       default: "",
     },
+
+    userName: {
+      type: String,
+      default: "",
+    },
+
     mobNo: {
       type: String,
       default: "",
@@ -70,15 +76,10 @@ const userSchema = new Schema(
 
     connectedWallets: [],
 
-    thirdPartyConnects: [{ name: "", type: "", id: "" }],
-
-    cardId: { type: mongoose.Types.ObjectId, ref: "Card" },
-
     email: {
       type: String,
       default: "",
     },
-    cartId: { type: mongoose.Types.ObjectId, ref: "Cart" },
   },
   {
     timestamps: true,

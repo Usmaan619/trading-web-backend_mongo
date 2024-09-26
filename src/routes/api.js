@@ -9,6 +9,7 @@ import transactionRoutes from "./transaction.route.js";
 import portfolioRoutes from "./portfolio.route.js";
 import providersRoutes from "./providers.route.js";
 import eventRoutes from "./event.route.js";
+import taskRoutes from "./task.route.js";
 
 const router = express();
 
@@ -34,6 +35,7 @@ router.use("/transaction", transactionRoutes);
 router.use("/portfolio", portfolioRoutes);
 router.use("/providers", providersRoutes);
 router.use("/events", eventRoutes);
+router.use("/task", taskRoutes);
 
 /**
  * catch api all errors

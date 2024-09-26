@@ -22,7 +22,8 @@ import {
 } from "../controllers/users/user.controller.js";
 import { User } from "../models/user.js";
 import { createEmailTransporter } from "../services/helper.js";
-import { APIError } from "rest-api-errors";
+import pk from "rest-api-errors";
+const { APIError } = pk;
 import { forgetPasswordTemplate } from "../emailTemplates/forgetPassword.template.js";
 import { otpEmailTemplate } from "../emailTemplates/otpEmail.template.js";
 import { authMiddleware, getToken } from "../middleware/checkAuth.js";
@@ -38,36 +39,32 @@ const router = express();
 router.post("/signUp", async (req, res, next) => {
   try {
     let data = "";
+    const user = await User.findOne({ email: req?.body?.email });
+    if (user) throw new APIError(403, "403", "User is already created");
     data = await signUpUser(req.body);
-    if (data) {
-      const token = jwt.sign(
-        {
-          id: data._id,
-          email: data.email,
-        },
-        config.SECRET,
-        { expiresIn: "90 days" }
-      );
+    if (!data) throw new APIError(403, "403", "User not register");
+    const token = getToken(
+      data._id,
+      data?.email,
+      data?.rememberMe ? req?.body?.rememberMe : false
+    );
+    data.save();
+    res.json({
+      success: true,
+      token,
+      data,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 
-      const card = await Card.create({
-        amount: 0,
-        currencyCode: "USD",
-        currencySign: "$",
-        status: "not asign",
-        last4: 0,
-        userId: data._id,
-      });
-
-      data.cardId = card._id;
-      data.save();
-
-      res.json({
-        success: true,
-        token,
-
-        data,
-      });
-    }
+router.get("/getAllUser", async (req, res, next) => {
+  try {
+    res.json({
+      success: true,
+      users: await User.find({}),
+    });
   } catch (error) {
     next(error);
   }

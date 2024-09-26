@@ -1,5 +1,6 @@
 import express from "express";
-import { APIError } from "rest-api-errors";
+import pkg from 'rest-api-errors';
+const { APIError } = pkg;
 import { authMiddleware } from "../middleware/checkAuth.js";
 import { connectWallet } from "../services/providers.service.js";
 

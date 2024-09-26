@@ -63,7 +63,7 @@ export const generatePromoCode = async () => {
   try {
     const randomNumber = Math.floor(10000000 + Math.random() * 90000000);
     const randomCharacters = await generateCharacters(2);
-    return "BF-" + randomCharacters + randomNumber;
+    return "SIW-" + randomCharacters + randomNumber;
   } catch (error) {
     console.log("error: ", error);
   }

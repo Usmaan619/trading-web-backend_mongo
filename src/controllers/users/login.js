@@ -1,4 +1,5 @@
-import { APIError } from "rest-api-errors";
+import pk from "rest-api-errors";
+const { APIError } = pk;
 import { User } from "../../models/user.js";
 import { getToken } from "../../middleware/checkAuth.js";
 
@@ -28,8 +29,6 @@ export const login = async (req, res, next) => {
     res.json({
       login: true,
       token,
-      _id: user._id,
-      email: user.email,
       message: "Login successfully",
     });
   } catch (error) {

@@ -1,4 +1,5 @@
-import { APIError } from "rest-api-errors";
+import pk from 'rest-api-errors';
+const { APIError } = pk;
 import { createEmailTransporter } from "../../services/helper.js";
 import { User } from "../../models/user.js";
 import { Enquiry } from "../../models/enquiry.js";

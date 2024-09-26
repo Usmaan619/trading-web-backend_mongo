@@ -1,17 +1,25 @@
 import mongoose from "mongoose";
 
+import autoIncrement from "mongoose-auto-increment";
+
+const connection = mongoose.createConnection(process.env.MONGO_URI);
+
+autoIncrement.initialize(connection);
+
 const taskSchema = new mongoose.Schema({
   title: { type: String, required: true },
 
+  ticketNo: { type: mongoose.Schema.Types.ObjectId },
   description: { type: String },
 
   status: {
     type: String,
-    enum: ["open", "pending", "in-progress", "completed"],
-    default: "pending",
+    enum: ["open", "pending", "in-progress", "testing", "completed"],
+    default: "open",
   },
 
-  assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  assignedTo: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+
 
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 
@@ -34,5 +42,11 @@ const taskSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-const Task = mongoose.model("Task", taskSchema);
-module.exports = Task;
+taskSchema.plugin(autoIncrement.plugin, {
+  model: "Task",
+  field: "ticketNo",
+  startAt: 10000,
+  incrementBy: 1,
+});
+
+export const Task = mongoose.model("Task", taskSchema);

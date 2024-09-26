@@ -1,6 +1,8 @@
 import pkg from 'lodash';
 
-import { APIError } from "rest-api-errors";
+import pk from 'rest-api-errors';
+const { APIError } = pk;
+
 
 const STATUSES = {
   SUCCESS: 200,

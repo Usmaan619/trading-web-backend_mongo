@@ -1,4 +1,6 @@
-import { APIError } from "rest-api-errors";
+import pkg from 'rest-api-errors';
+const { APIError } = pkg;
+
 
 export const errorHandler = (err, req, res, next) => {
   const error =

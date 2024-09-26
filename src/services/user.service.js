@@ -1,7 +1,8 @@
 import { User } from "../models/user.js";
 import { asyncForEach, generatePromoCode, getOtp } from "../utils/helper.js";
 import { upload } from "./s3.service.js";
-import { APIError } from "rest-api-errors";
+import pk from "rest-api-errors";
+const { APIError } = pk;
 import { forgetPasswordTemplate } from "../emailTemplates/forgetPassword.template.js";
 import { sentOtp, verifySentOtp, createEmailTransporter } from "./helper.js";
 import { Transaction } from "../models/transaction.js";

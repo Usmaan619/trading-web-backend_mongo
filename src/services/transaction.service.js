@@ -1,6 +1,6 @@
-import { APIError } from "rest-api-errors";
-
 import { Transaction } from "../models/transaction.js";
+import pkg from 'rest-api-errors';
+const { APIError } = pkg;
 
 export const createTransaction = async (data) => {
   try {
