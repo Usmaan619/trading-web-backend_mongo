@@ -59,17 +59,6 @@ router.post("/signUp", async (req, res, next) => {
   }
 });
 
-router.get("/getAllUser", async (req, res, next) => {
-  try {
-    res.json({
-      success: true,
-      users: await User.find({}),
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
 router.post("/update", fileParser, async (req, res, next) => {
   try {
     const files = req.files;
@@ -581,13 +570,13 @@ router.post("/pushNotification", async (req, res, next) => {
 
 router.get("/getAllUser", authMiddleware, async (req, res, next) => {
   try {
-    let data = await User.find({}).populate("countryId", "name").lean();
+    let data = await User.find({});
 
-    delete data.password;
+    for (const d of data) delete d.password;
 
     res.json({
       success: true,
-      data,
+      users: data,
     });
   } catch (error) {
     next(error);

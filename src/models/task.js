@@ -18,8 +18,7 @@ const taskSchema = new mongoose.Schema({
     default: "open",
   },
 
-  assignedTo: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-
+  assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 
@@ -35,9 +34,12 @@ const taskSchema = new mongoose.Schema({
     {
       text: String,
       createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+
       createdAt: { type: Date, default: Date.now },
     },
   ],
+
+  collaborators: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 
   createdAt: { type: Date, default: Date.now },
 });
