@@ -80,7 +80,7 @@ router.post("/create", authMiddleware, async (req, res, next) => {
     user.tasks.push(task);
     await user.save();
 
-    res.json({ success: true });
+    res.json({ success: true ,message:"Task Created Successfully" });
   } catch (error) {
     next(error);
   }
