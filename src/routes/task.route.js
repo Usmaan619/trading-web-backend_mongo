@@ -3,9 +3,8 @@ import { Task } from "../models/task.js";
 import { User } from "../models/user.js";
 import pkg from "rest-api-errors";
 import { authMiddleware } from "../middleware/checkAuth.js";
-import { Ticket } from "../models/tastDailyUpdate.js";
 const { APIError } = pkg;
-
+import { TaskDaily } from "../models/tastDailyUpdate.js";
 const router = express();
 
 // Get all tasks
@@ -28,7 +27,8 @@ router.get("/getAllTasks", async (req, res, next) => {
       .populate({
         path: "comments.createdBy",
         select: "_id name",
-      });
+      })
+      .sort({ createdAt: -1 });
 
     res.json(tasks);
   } catch (error) {
@@ -62,7 +62,9 @@ router.post("/create", authMiddleware, async (req, res, next) => {
     });
 
     for (const element of collaborators) {
-      // Optionally, add the task to each collaborator's task list
+      /**
+       * Optionally, add the task to each collaborator's task list
+       * */
       if (collaborators && collaborators.length > 0) {
         await User.updateMany(
           { _id: { $in: element?._id } },
@@ -132,14 +134,12 @@ router.post("/updateTask/:id", authMiddleware, async (req, res, next) => {
       task.collaborators.push(...newCollaborators);
     }
 
-    if (comments) {
+    if (comments)
       task.comments.push({
         text: comments,
         createdBy: req.user.id,
       });
-    }
 
-    // Save the updated task
     await task.save();
 
     res.json({
@@ -170,22 +170,39 @@ router.put("/updateTaskStatus_old/:id", async (req, res, next) => {
   }
 });
 
-router.post(" /createDailyUpdate"),
-  async (req, res, next) => {
-    try {
-      const { ticketNo, about, description, tag } = req.body;
-      const newTicket = new Ticket({
-        ticketNo,
-        about,
-        description,
-        tag,
-      });
+router.post("/createTaskDailyUpdate", async (req, res, next) => {
+  try {
+    const { ticketNo, about, date, description, tags } = req.body;
 
-      await newTicket.save();
-      res.json({ success: true });
-    } catch (error) {
-      next(error);
-    }
-  };
+    const newTicket = new TaskDaily({
+      ticketNo,
+      about,
+      date: date || new Date(),
+      description,
+      tags,
+    });
+
+    await newTicket.save();
+    res.json({ success: true, message: "Created report successfully" });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get("/getAllDailyTaskUpdate", async (req, res, next) => {
+  try {
+    res.json({
+      success: true,
+    tasks: await TaskDaily.find()
+        .populate({
+          path: "tags",
+          select: "_id name",
+        })
+        .sort({ createdAt: -1 }),
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 
 export default router;

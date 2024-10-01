@@ -13,24 +13,14 @@ const ticketSchema = new mongoose.Schema(
     },
     date: {
       type: Date,
-      default: Date.now,
     },
     description: {
       type: String,
       required: true,
     },
-    tag: {
-      type: String,
-      enum: ["bug", "feature", "improvement", "urgent", "other"],
-      default: "other",
-    },
+    tags: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );
 
-// ticketSchema.pre("save", function (next) {
-//   this.updatedAt = Date.now();
-//   next();
-// });
-
-export const Ticket = mongoose.model("Ticket", ticketSchema);
+export const TaskDaily = mongoose.model("TicketDailyUpdate", ticketSchema);
