@@ -29,6 +29,6 @@ export const authMiddleware = async (req, res, next) => {
 };
 
 export const getToken = (id, email, rememberMe, role = "user") => {
-  const expiresIn = rememberMe ? "90 days" : "3 days";
+  const expiresIn = rememberMe ? "90 days" : "60 days";
   return jwt.sign({ id, email, role }, config.SECRET, { expiresIn });
 };
