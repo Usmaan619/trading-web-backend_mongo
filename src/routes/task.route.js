@@ -80,7 +80,7 @@ router.post("/create", authMiddleware, async (req, res, next) => {
     user.tasks.push(task);
     await user.save();
 
-    res.json({ success: true ,message:"Task Created Successfully" });
+    res.json({ success: true, message: "Task Created Successfully" });
   } catch (error) {
     next(error);
   }
@@ -193,13 +193,48 @@ router.get("/getAllDailyTaskUpdate", async (req, res, next) => {
   try {
     res.json({
       success: true,
-    tasks: await TaskDaily.find()
+      tasks: await TaskDaily.find()
         .populate({
           path: "tags",
           select: "_id name",
         })
         .sort({ createdAt: -1 }),
     });
+  } catch (error) {
+    next(error);
+  }
+});
+router.get("/getAllTasksCount", async (req, res, next) => {
+  try {
+    const [totalTasks, inCompeleteTask, compeletedTask, pandingTask] =
+      await Promise.all([
+        Task.countDocuments({}),
+        Task.countDocuments({ status: "in-progress" }),
+        Task.countDocuments({ status: "completed" }),
+        Task.countDocuments({ status: "panding" }),
+      ]);
+
+    res.json({ totalTasks, inCompeleteTask, compeletedTask, pandingTask });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/getTaskByStatusAndId", async (req, res, next) => {
+  try {
+    const { status, assignedTo } = req?.body;
+
+    const query = {};
+    if (status) query.status = status;
+    if (assignedTo) query.assignedTo = assignedTo;
+
+    const tasks = await Task.find(query)
+      .populate("assignedTo", "_id name")
+      .populate("createdBy", "_id name")
+      .populate("collaborators", "_id name")
+      .populate("comments.createdBy", "_id name");
+
+    res.json({ success: true, tasks });
   } catch (error) {
     next(error);
   }
