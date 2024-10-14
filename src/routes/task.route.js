@@ -5,6 +5,7 @@ import pkg from "rest-api-errors";
 import { authMiddleware } from "../middleware/checkAuth.js";
 const { APIError } = pkg;
 import { TaskDaily } from "../models/tastDailyUpdate.js";
+import moment from "moment/moment.js";
 const router = express();
 
 // Get all tasks
@@ -169,36 +170,49 @@ router.put("/updateTaskStatus_old/:id", async (req, res, next) => {
     next(error);
   }
 });
+// in
+router.post(
+  "/createTaskDailyUpdate",
+  authMiddleware,
+  async (req, res, next) => {
+    try {
+      const { ticketNo, about, date, description, tags } = req.body;
 
-router.post("/createTaskDailyUpdate", async (req, res, next) => {
-  try {
-    const { ticketNo, about, date, description, tags } = req.body;
+      const existingTicket = await Task.findOne({ ticketNo });
+      if (!existingTicket)
+        throw new APIError(404, "404", "Ticket number not found");
 
-    const newTicket = new TaskDaily({
-      ticketNo,
-      about,
-      date: date || new Date(),
-      description,
-      tags,
-    });
-
-    await newTicket.save();
-    res.json({ success: true, message: "Created report successfully" });
-  } catch (err) {
-    next(err);
+      await TaskDaily.create({
+        ticketNo,
+        about,
+        date: date || new Date(),
+        description,
+        tags,
+        assignedTo: req.user._id,
+      });
+      res.json({ success: true, message: "Created report successfully" });
+    } catch (err) {
+      next(err);
+    }
   }
-});
-
-router.get("/getAllDailyTaskUpdate", async (req, res, next) => {
+);
+// in
+router.get("/getAllDailyTaskUpdate", authMiddleware, async (req, res, next) => {
   try {
+    const tasks = await TaskDaily.find({ assignedTo: req?.user?._id })
+      .populate({
+        path: "tags",
+        select: "_id name",
+      })
+      .populate({
+        path: "assignedTo",
+        select: "_id name",
+      })
+      .sort({ createdAt: -1 });
+
     res.json({
       success: true,
-      tasks: await TaskDaily.find()
-        .populate({
-          path: "tags",
-          select: "_id name",
-        })
-        .sort({ createdAt: -1 }),
+      tasks,
     });
   } catch (error) {
     next(error);
@@ -235,6 +249,36 @@ router.post("/getTaskByStatusAndId", async (req, res, next) => {
       .populate("comments.createdBy", "_id name");
 
     res.json({ success: true, tasks });
+  } catch (error) {
+    next(error);
+  }
+});
+// in
+router.get("/tickets/filter", authMiddleware, async (req, res, next) => {
+  try {
+    const { startDate } = req.query;
+
+    if (!startDate) throw new APIError(400, "400", "startDate is required");
+
+    // Parse startDate as a moment object and create a date range for the entire day
+    const startOfDay = moment(startDate).startOf("day").toDate();
+    const endOfDay = moment(startDate).endOf("day").toDate();
+
+    const tickets = await TaskDaily.find({
+      createdAt: {
+        $gte: startOfDay,
+        $lte: endOfDay,
+      },
+      assignedTo: req?.user?._id,
+    })
+      .populate("tags", "_id name")
+      .populate("assignedTo", "_id name");
+
+    res.json({
+      success: true,
+      count: tickets.length,
+      data: tickets,
+    });
   } catch (error) {
     next(error);
   }
