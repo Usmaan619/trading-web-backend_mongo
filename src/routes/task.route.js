@@ -6,6 +6,8 @@ import { authMiddleware } from "../middleware/checkAuth.js";
 const { APIError } = pkg;
 import { TaskDaily } from "../models/tastDailyUpdate.js";
 import moment from "moment/moment.js";
+import mongoose from "mongoose";
+import multer from "multer";
 const router = express();
 
 // Get all tasks
@@ -37,53 +39,94 @@ router.get("/getAllTasks", async (req, res, next) => {
   }
 });
 
-// Create a new task
-router.post("/create", authMiddleware, async (req, res, next) => {
+// Set up multer for file handling (in-memory)
+const storage = multer.memoryStorage();
+const fileParser = multer({ storage }).single("file"); // single file upload
+
+const parseCollaborators = (collaboratorsJson) => {
   try {
-    const {
-      title,
-      description,
-      collaborators,
-      assignedTo,
-      dueDate,
-      priority,
-      status,
-    } = req.body;
+    if (!collaboratorsJson) return [];
+
+    const collaboratorsArray = JSON.parse(collaboratorsJson);
+    const objectIdArray = [];
+
+    // Iterate using for...of loop
+    for (const c of collaboratorsArray) {
+      if (!mongoose.Types.ObjectId.isValid(c?._id)) {
+        throw new Error(`Invalid ObjectId format: ${c?.id}`);
+      }
+      objectIdArray.push(mongoose.Types.ObjectId(c?._id)); // Convert to ObjectId and add to the result array
+    }
+
+    return objectIdArray;
+  } catch (error) {
+    throw new Error(`Failed to parse collaborators: ${error.message}`);
+  }
+};
+
+// Utility function to update collaborators' task lists
+const updateCollaborators = async (collaborators, taskId) => {
+  if (collaborators.length > 0) {
+    return User.updateMany(
+      { _id: { $in: collaborators } },
+      { $push: { tasks: taskId } }
+    );
+  }
+};
+
+// Utility function to add task to the assigned user's list
+const addTaskToAssignedUser = async (assignedTo, taskId) => {
+  if (assignedTo) {
+    const user = await User.findById(assignedTo);
+    if (user) {
+      user.tasks.push(taskId);
+      await user.save();
+    }
+  }
+};
+
+router.post("/create", fileParser, authMiddleware, async (req, res, next) => {
+  try {
+    const { title, description, assignedTo, dueDate, priority, status } =
+      req?.body;
+
+    // Parse collaborators from JSON
+    const collaborators = parseCollaborators(req?.body?.collaborators);
+
+    // File handling
+    const file = req?.file
+      ? {
+          data: req?.file?.buffer, // Store file in Buffer format
+          contentType: req?.file?.mimetype, // Store file MIME type
+          originalname: req?.file?.originalname,
+        }
+      : null;
+
+    // Create a new task
     const task = new Task({
       title,
       description,
-      assignedTo,
-      dueDate,
+      assignedTo: assignedTo ? mongoose.Types.ObjectId(assignedTo) : null,
+      dueDate: dueDate ? new Date(dueDate) : null,
       priority,
       status,
+      file,
       collaborators,
-      // comments,
       createdBy: req?.user?._id,
-      // createdBy: req?.body?.createdBy,
     });
 
-    for (const element of collaborators) {
-      /**
-       * Optionally, add the task to each collaborator's task list
-       * */
-      if (collaborators && collaborators.length > 0) {
-        await User.updateMany(
-          { _id: { $in: element?._id } },
-          { $push: { tasks: task._id } }
-        );
-      }
-    }
-
+    // Save the task in MongoDB
     await task.save();
 
-    // Add task to the assigned user's task array
-    const user = await User.findById(assignedTo);
-    user.tasks.push(task);
-    await user.save();
+    // Update collaborators and assigned user asynchronously
+    await Promise.all([
+      updateCollaborators(collaborators, task._id),
+      addTaskToAssignedUser(assignedTo, task._id),
+    ]);
 
-    res.json({ success: true, message: "Task Created Successfully" });
+    res.json({ success: true, message: "Task Created Successfully", task });
   } catch (error) {
-    next(error);
+    next(error); // Centralized error handling
   }
 });
 

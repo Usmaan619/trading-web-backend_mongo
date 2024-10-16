@@ -14,7 +14,7 @@ const taskSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    enum: ["open", "pending", "in-progress", "testing", "completed","done"],
+    enum: ["open", "pending", "in-progress", "testing", "completed", "done"],
     default: "open",
   },
 
@@ -23,6 +23,12 @@ const taskSchema = new mongoose.Schema({
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 
   dueDate: { type: Date },
+
+  file: {
+    data: Buffer,
+    contentType: String, // MIME type
+    originalname: String,
+  },
 
   priority: {
     type: String,
