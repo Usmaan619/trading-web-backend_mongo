@@ -225,14 +225,16 @@ router.post(
       if (!existingTicket)
         throw new APIError(404, "404", "Ticket number not found");
 
-      await TaskDaily.create({
+      const task = await TaskDaily.create({
         ticketNo,
         about,
         date: date || new Date(),
         description,
         tags,
-        assignedTo: req.user._id,
+        assignedTo: existingTicket?.assignedTo,
+        uId: req?.user?._id,
       });
+      console.log("task: ", task);
       res.json({ success: true, message: "Created report successfully" });
     } catch (err) {
       next(err);
@@ -242,9 +244,13 @@ router.post(
 // in
 router.get("/getAllDailyTaskUpdate", authMiddleware, async (req, res, next) => {
   try {
-    const tasks = await TaskDaily.find({ assignedTo: req?.user?._id })
+    const tasks = await TaskDaily.find({ uId: req?.user?._id })
       .populate({
         path: "tags",
+        select: "_id name",
+      })
+      .populate({
+        path: "uId",
         select: "_id name",
       })
       .populate({
@@ -308,13 +314,14 @@ router.get("/tickets/filter", authMiddleware, async (req, res, next) => {
     const endOfDay = moment(startDate).endOf("day").toDate();
 
     const tickets = await TaskDaily.find({
-      createdAt: {
+      date: {
         $gte: startOfDay,
         $lte: endOfDay,
       },
-      assignedTo: req?.user?._id,
+      uId: req?.user?._id,
     })
       .populate("tags", "_id name")
+      .populate("uId", "_id name")
       .populate("assignedTo", "_id name");
 
     res.json({

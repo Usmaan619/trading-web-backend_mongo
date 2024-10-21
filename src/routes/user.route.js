@@ -307,26 +307,17 @@ router.post("/update-password", async (req, res, next) => {
 
 router.post("/reset-password", async (req, res, next) => {
   try {
-    const { newPassword, email, otp } = req.body;
+    const { newPassword, email } = req.body;
 
     let user = await User.findOne({ email });
     if (!user) {
       throw new APIError("400", 400, "User doesn't exist.");
     }
 
-    if (!otp || !newPassword) {
-      throw new APIError(
-        "422",
-        422,
-        !otp ? "Enter OTP." : "Enter new password."
-      );
+    if (!newPassword) {
+      throw new APIError("422", 422, "Enter new password.");
     }
 
-    if (user.otp !== otp) {
-      throw new APIError("422", 422, "Invalid OTP.");
-    }
-
-    user.otp = "";
     user.password = newPassword;
 
     await user.save();
