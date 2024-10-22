@@ -274,7 +274,7 @@ router.get("/getAllTasksCount", async (req, res, next) => {
         Task.countDocuments({}),
         Task.countDocuments({ status: "in-progress" }),
         Task.countDocuments({ status: "completed" }),
-        Task.countDocuments({ status: "panding" }),
+        Task.countDocuments({ status: "pending" }),
       ]);
 
     res.json({ totalTasks, inCompeleteTask, compeletedTask, pandingTask });
