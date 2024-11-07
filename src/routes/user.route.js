@@ -669,4 +669,34 @@ router.get("/cart", async (req, res, next) => {
   }
 });
 
+router.get("/totalUserData", async (req, res, next) => {
+  try {
+    const result = await User.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalUsers: { $sum: 1 },
+          totalInvestment: { $sum: "$totalInvestment" },
+          totalProfit: { $sum: { $sum: "$portfolio.profitLoss" } },
+          totalReleasedAmount: { $sum: { $sum: "$transactions.amount" } },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          totalUsers: 1,
+          totalInvestment: 1,
+          totalProfit: 1,
+          totalReleasedAmount: 1,
+        },
+      },
+    ]);
+
+    console.log("result: ", result);
+    res.json(result[0]);
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;
