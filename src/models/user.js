@@ -7,79 +7,85 @@ const saltRounds = 15;
 const { ObjectId } = Schema;
 const userSchema = new Schema(
   {
-    name: {
+    username: {
       type: String,
-      default: "",
+      required: true,
+      unique: true,
+      trim: true,
     },
-
-    userName: {
+    email: {
       type: String,
-      default: "",
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
     },
-
-    mobNo: {
-      type: String,
-      default: "",
-    },
-    tasks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Task" }],
-
-    // role: { type: Schema.Types.ObjectId, ref: "Role" },
-    role: { type: String, default: "user" },
     password: {
       type: String,
+      required: true,
+      minlength: 8,
     },
+    role: {
+      type: String,
+      enum: ["Trader", "Investor", "Admin"],
+      default: "Trader",
+    },
+    totalInvestment: {
+      type: Number,
+      default: 0.0,
+    },
+    portfolio: [
+      {
+        assetName: {
+          type: String,
+          required: true,
+        },
+        assetType: {
+          type: String,
+          enum: ["Stock", "Crypto", "Forex", "Commodity"],
+          required: true,
+        },
+        amountInvested: {
+          type: Number,
+          required: true,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+        },
+        currentPrice: {
+          type: Number,
+          default: 0.0,
+        },
+        profitLoss: {
+          type: Number,
+          default: 0.0,
+        },
+        purchaseDate: {
+          type: Date,
+          required: true,
+        },
+      },
+    ],
     userProfile: {
       type: String,
     },
-
-    countryCode: {
-      type: String,
-    },
-
-    pin: {
-      type: String,
-      default: "",
-    },
-    countryId: { type: Schema.Types.ObjectId, ref: "Country" },
-
-    providers: {
-      type: Array,
-      default: [],
-    },
-    otp: {
-      type: Number,
-    },
-
-    emailOtp: {
-      type: Number,
-    },
-
-    mobNoOtp: {
-      type: Number,
-    },
-
-    createdBy: {
-      type: ObjectId,
-    },
-
-    isRegistered: {
-      type: Boolean,
-      default: false,
-    },
-
-    count: {
-      type: Number,
-      default: 0,
-    },
-
-    promoCode: { type: String },
-
-    connectedWallets: [],
-
-    email: {
-      type: String,
-      default: "",
-    },
+    transactions: [
+      {
+        type: {
+          type: String,
+          enum: ["Buy", "Sell", "Deposit", "Withdraw"],
+          required: true,
+        },
+        assetName: String,
+        assetType: String,
+        amount: Number,
+        date: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   {
     timestamps: true,

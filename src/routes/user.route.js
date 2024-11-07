@@ -36,7 +36,7 @@ import { getTimezoneByCountry } from "country-timezone-list";
 
 const router = express();
 
-router.post("/signUp", async (req, res, next) => {
+router.post("/si", async (req, res, next) => {
   try {
     let data = "";
     const user = await User.findOne({ email: req?.body?.email });
@@ -54,6 +54,35 @@ router.post("/signUp", async (req, res, next) => {
       token,
       data,
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/sign_up", async (req, res) => {
+  try {
+    const {
+      username,
+      email,
+      password,
+      role,
+      totalInvestment,
+      portfolio,
+      transactions,
+    } = req.body;
+
+    const newUser = new User({
+      username,
+      email,
+      password,
+      role,
+      totalInvestment,
+      portfolio,
+      transactions,
+    });
+
+    await newUser.save();
+    res.json({ message: "User created successfully", success: true });
   } catch (error) {
     next(error);
   }

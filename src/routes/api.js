@@ -11,6 +11,8 @@ import providersRoutes from "./providers.route.js";
 import eventRoutes from "./event.route.js";
 import taskRoutes from "./task.route.js";
 
+import marketRoutes from "./market.route.js";
+
 const router = express();
 
 /**
@@ -36,6 +38,7 @@ router.use("/portfolio", portfolioRoutes);
 router.use("/providers", providersRoutes);
 router.use("/events", eventRoutes);
 router.use("/task", taskRoutes);
+router.use("/market", marketRoutes);
 
 /**
  * catch api all errors
