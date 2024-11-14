@@ -588,7 +588,7 @@ router.post("/pushNotification", async (req, res, next) => {
   }
 });
 
-router.get("/getAllUser", authMiddleware, async (req, res, next) => {
+router.get("/getAllUser", async (req, res, next) => {
   try {
     let data = await User.find({});
 

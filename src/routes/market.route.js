@@ -12,7 +12,7 @@ router.get("/getIndexes", async (req, res, next) => {
       "^NSEBANK",
       "^DJI",
       "^IXIC",
-      "NASDAQ:AAPL", 
+      "NASDAQ:AAPL",
       "BTC-USD",
       "ETH-USD",
       "SOL-USD",
@@ -25,6 +25,15 @@ router.get("/getIndexes", async (req, res, next) => {
     ];
 
     const data = await yahooFinance.quote(symbol);
+
+    res.json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+});
+router.get("/getBySymbolIndex", async (req, res, next) => {
+  try {
+    const data = await yahooFinance.quote(req?.query?.symbol);
 
     res.json({ success: true, data });
   } catch (error) {

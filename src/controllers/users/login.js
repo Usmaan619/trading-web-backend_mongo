@@ -5,37 +5,33 @@ import { getToken } from "../../middleware/checkAuth.js";
 
 export const login = async (req, res, next) => {
   try {
-    const {
-      body: { email, password, rememberMe },
-    } = req;
+    const { email, password, rememberMe = false, role } = req.body;
 
-    const user = await User.findOne({ email });
+    const query = { email, ...(role === "Admin" && { role }) };
+    const user = await User.findOne(query);
 
     if (!user) {
-      throw new APIError(422, "422", "User not registered, sign-up first.");
-    }
-    const match = await user.comparePassword(password, user.password);
-
-    if (!match) {
-      throw new APIError(422, "422", "Invalid credentials");
+      return next(new APIError(422, "422", "User not registered, sign-up first."));
     }
 
-    const token = getToken(
-      user?._id,
-      user?.email,
-      rememberMe ? rememberMe : false
-    );
+    const isPasswordCorrect = await user.comparePassword(password, user.password);
+    if (!isPasswordCorrect) {
+      return next(new APIError(422, "422", "Invalid credentials"));
+    }
+
+    const token = getToken(user._id, user.email, user.role, rememberMe);
 
     res.json({
       login: true,
       token,
-      name: user?.name,
+      name: user.name,
       message: "Login successfully",
     });
   } catch (error) {
     next(error);
   }
 };
+
 
 export const sendOtp = async (req, res, next) => {
   try {
