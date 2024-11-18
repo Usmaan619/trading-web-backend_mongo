@@ -336,9 +336,9 @@ router.post("/update-password", async (req, res, next) => {
 
 router.post("/reset-password", async (req, res, next) => {
   try {
-    const { newPassword, email } = req.body;
+    const { newPassword, email, otp } = req.body;
 
-    let user = await User.findOne({ email });
+    let user = await User.findOne({ email, otp });
     if (!user) {
       throw new APIError("400", 400, "User doesn't exist.");
     }
