@@ -63,9 +63,9 @@ router.get("/getAMFIFundData", async (req, res, next) => {
       };
     });
 
-    console.log("Sample Fund Data:", parsedFunds.slice(0, 5)); // Display first 5 entries
+     // Display first 5 entries
     const datas = parsedFunds.slice(0, 5);
-    console.log("parsedFunds: ", parsedFunds?.length);
+    
 
     res.json({
       data: parsedFunds?.filter((fund) => fund?.schemeCode && fund?.schemeName),
@@ -73,7 +73,7 @@ router.get("/getAMFIFundData", async (req, res, next) => {
     });
   } catch (error) {
     next(error);
-    console.error("Error fetching fund data:", error);
+    
   }
 });
 
@@ -96,7 +96,7 @@ async function scrapeMoneycontrolFunds() {
     return details;
   });
 
-  console.log("Fund Details:", fundDetails);
+  
 
   await browser.close();
 }
@@ -124,7 +124,7 @@ async function scrapeIndianFunds() {
     });
   });
 
-  console.log("Top Funds:", funds);
+  
 
   await browser.close();
   return funds;
@@ -148,10 +148,10 @@ async function scrapeMoneycontrol() {
       };
     });
 
-    console.log("Fund Details:", fundDetails);
+    
     return fundDetails;
   } catch (error) {
-    console.error("Error scraping Moneycontrol:", error.message);
+    
   } finally {
     await browser.close();
   }
